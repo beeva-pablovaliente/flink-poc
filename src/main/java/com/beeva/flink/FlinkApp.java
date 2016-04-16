@@ -1,11 +1,7 @@
 package com.beeva.flink;
 
-import org.apache.flink.api.common.functions.FlatMapFunction;
-import org.apache.flink.api.common.functions.ReduceFunction;
-import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
-import org.apache.flink.streaming.api.windowing.time.Time;
 import org.apache.flink.streaming.connectors.json.JSONParseFlatMap;
 import org.apache.flink.streaming.connectors.twitter.TwitterSource;
 import org.apache.flink.util.Collector;
@@ -15,8 +11,6 @@ import org.springframework.boot.Banner;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
-
-import java.util.Properties;
 
 /**
  *
@@ -31,12 +25,14 @@ public class FlinkApp implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
 
+        //Obtain the execution environment
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
 
-        //Prepare twitter data
+        //Load the initial data. Prepare twitter data
         DataStream<String> streamSource =
                 env.addSource(new TwitterSource(System.getProperty("user.dir") + "/src/main/resources/twitter.properties"));
 
+        //Specify transformation on data
         DataStream<String> dataStream = streamSource
                 .flatMap(new JSONParseFlatMap<String, String>() {
                     @Override
@@ -46,8 +42,10 @@ public class FlinkApp implements CommandLineRunner {
                 })
                 ;
 
+        //Specify Where to put the results
         dataStream.print();
 
+        //Trigger the program execution
         env.execute("Twitter Streaming");
 
     }
