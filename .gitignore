@@ -1,8 +1,10 @@
+#IntelliJ files
 /.idea/
-/target/
 *.iml
 
 #Eclipse files
 .project
 .classpath
 .settings
+
+/target/
