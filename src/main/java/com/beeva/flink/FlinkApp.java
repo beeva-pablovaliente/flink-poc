@@ -9,10 +9,12 @@ import org.apache.flink.streaming.util.serialization.SimpleStringSchema;
 import org.apache.flink.util.Collector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.Banner;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.core.io.ClassPathResource;
 
 /**
  *
@@ -23,6 +25,18 @@ public class FlinkApp implements CommandLineRunner {
 
     private final Logger logger = LoggerFactory.getLogger(FlinkApp.class);
 
+    //Twitter properties
+    @Value("${twitter.filename}")
+    private String twitterFilename;
+
+    //Kafka properties
+    @Value("${kafka.host}")
+    private String kafkaHost;
+    @Value("${kafka.port}")
+    private String kafkaPort;
+    @Value("${kafka.producer.topic}")
+    private String kafkaTopic;
+
 
     @Override
     public void run(String... args) throws Exception {
@@ -32,7 +46,7 @@ public class FlinkApp implements CommandLineRunner {
 
         //Load the initial data. Prepare twitter data
         DataStream<String> streamSource =
-                env.addSource(new TwitterSource(System.getProperty("user.dir") + "/src/main/resources/twitter.properties"));
+                env.addSource(new TwitterSource(new ClassPathResource(twitterFilename).getFile().getPath()));
 
         //Specify transformation on data
         DataStream<String> dataStream = streamSource
@@ -45,7 +59,7 @@ public class FlinkApp implements CommandLineRunner {
                 ;
 
         //Specify Where to put the results
-        dataStream.addSink(new FlinkKafkaProducer09<String>("localhost:9092", "flink-topic", new SimpleStringSchema()));
+        dataStream.addSink(new FlinkKafkaProducer09<String>(String.format("%s:%s", kafkaHost, kafkaPort), kafkaTopic, new SimpleStringSchema()));
 
         dataStream.print();
 

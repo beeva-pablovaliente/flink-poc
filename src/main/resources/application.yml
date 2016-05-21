@@ -1,0 +1,8 @@
+twitter:
+  filename: twitter.properties
+
+kafka:
+  host: localhost
+  port: 9092
+  producer:
+    topic: flink-topic
