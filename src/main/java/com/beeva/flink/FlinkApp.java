@@ -3,7 +3,9 @@ package com.beeva.flink;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.connectors.json.JSONParseFlatMap;
+import org.apache.flink.streaming.connectors.kafka.FlinkKafkaProducer09;
 import org.apache.flink.streaming.connectors.twitter.TwitterSource;
+import org.apache.flink.streaming.util.serialization.SimpleStringSchema;
 import org.apache.flink.util.Collector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,6 +45,8 @@ public class FlinkApp implements CommandLineRunner {
                 ;
 
         //Specify Where to put the results
+        dataStream.addSink(new FlinkKafkaProducer09<String>("localhost:9092", "flink-topic", new SimpleStringSchema()));
+
         dataStream.print();
 
         //Trigger the program execution
